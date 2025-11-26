@@ -99,9 +99,10 @@ static def gitBranchName() {
     return cmd.execute().text.trim()
 }
 
-// For Google Play build, build on any other branch than main will have a "-dev" suffix
+// For Google Play build, build on any other branch than main/release will have a "-dev" suffix
 static def getGplayVersionSuffix() {
-    if (gitBranchName() == "main") {
+    def branch = gitBranchName()
+    if (branch == "main" || branch.startsWith("release/")) {
         return ""
     } else {
         return "-dev"
@@ -174,11 +175,13 @@ android {
         }
 
         // Ref: https://developer.android.com/studio/build/configure-apk-splits.html
+        // Disable splits when building AAB (bundle handles ABI splitting automatically)
+        def buildingBundle = gradle.startParameter.taskNames.any { it.toLowerCase().contains("bundle") }
         splits {
             // Configures multiple APKs based on ABI.
             abi {
-                // Enables building multiple APKs per ABI.
-                enable true
+                // Enables building multiple APKs per ABI (disabled for AAB builds).
+                enable !buildingBundle
 
                 // By default all ABIs are included, so use reset() and include to specify that we only
                 // want APKs for armeabi-v7a, x86, arm64-v8a and x86_64.
@@ -265,7 +268,7 @@ android {
                 optimizeCode true
                 proguardFiles 'proguard-rules.pro'
             }
-            // signingConfig signingConfigs.release
+            signingConfig signingConfigs.release
         }
 
         nightly {
