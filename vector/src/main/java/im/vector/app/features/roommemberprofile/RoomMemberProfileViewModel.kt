@@ -96,6 +96,8 @@ class RoomMemberProfileViewModel @AssistedInject constructor(
                 setState { copy(showAsMember = true) }
                 observeRoomMemberSummary(room)
                 observeRoomSummaryAndPowerLevels(room)
+                // Also fetch extended profile for room members
+                fetchExtendedProfile()
             }
         }
 
@@ -346,15 +348,38 @@ class RoomMemberProfileViewModel @AssistedInject constructor(
     }
 
     private suspend fun fetchProfileInfo() {
-        val result = runCatchingToAsync {
-            session.profileService()
-                    .getProfile(initialState.userId)
-                    .let { User.fromJson(initialState.userId, it) }
-                    .toMatrixItem()
+        val profileJson = try {
+            session.profileService().getProfile(initialState.userId)
+        } catch (failure: Throwable) {
+            setState {
+                copy(
+                        userMatrixItem = Fail(failure),
+                        extendedProfile = Fail(failure)
+                )
+            }
+            return
         }
 
+        val matrixItem = User.fromJson(initialState.userId, profileJson).toMatrixItem()
+        val extendedData = ExtendedProfileData.fromProfileJson(profileJson)
+
         setState {
-            copy(userMatrixItem = result)
+            copy(
+                    userMatrixItem = Success(matrixItem),
+                    extendedProfile = Success(extendedData)
+            )
+        }
+    }
+
+    private fun fetchExtendedProfile() {
+        viewModelScope.launch {
+            try {
+                val profileJson = session.profileService().getProfile(initialState.userId)
+                val extendedData = ExtendedProfileData.fromProfileJson(profileJson)
+                setState { copy(extendedProfile = Success(extendedData)) }
+            } catch (failure: Throwable) {
+                setState { copy(extendedProfile = Fail(failure)) }
+            }
         }
     }
 

@@ -33,7 +33,8 @@ data class RoomMemberProfileViewState(
         val asyncMembership: Async<Membership> = Uninitialized,
         val hasReadReceipt: Boolean = false,
         val userColorOverride: String? = null,
-        val actionPermissions: ActionPermissions = ActionPermissions()
+        val actionPermissions: ActionPermissions = ActionPermissions(),
+        val extendedProfile: Async<ExtendedProfileData> = Uninitialized
 ) : MavericksState {
 
     constructor(args: RoomMemberProfileArgs) : this(userId = args.userId, roomId = args.roomId)

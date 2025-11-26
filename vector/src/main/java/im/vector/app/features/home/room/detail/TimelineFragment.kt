@@ -334,7 +334,18 @@ class TimelineFragment :
         setupBackPressHandling()
 
         views.includeRoomToolbar.roomToolbarContentView.debouncedClicks {
-            navigator.openRoomProfile(requireActivity(), timelineArgs.roomId)
+            withState(timelineViewModel) { state ->
+                val roomSummary = state.asyncRoomSummary()
+                if (roomSummary?.isDirect == true && roomSummary.directUserId != null) {
+                    navigator.openRoomMemberProfile(
+                            userId = roomSummary.directUserId!!,
+                            roomId = timelineArgs.roomId,
+                            context = requireActivity()
+                    )
+                } else {
+                    navigator.openRoomProfile(requireActivity(), timelineArgs.roomId)
+                }
+            }
         }
 
         sharedActionViewModel
@@ -493,12 +504,21 @@ class TimelineFragment :
         )
     }
 
-    private fun handleOpenRoomSettings(directAccess: Int? = null) {
-        navigator.openRoomProfile(
-                requireContext(),
-                timelineArgs.roomId,
-                directAccess
-        )
+    private fun handleOpenRoomSettings(directAccess: Int? = null) = withState(timelineViewModel) { state ->
+        val roomSummary = state.asyncRoomSummary()
+        if (roomSummary?.isDirect == true && roomSummary.directUserId != null && directAccess == null) {
+            navigator.openRoomMemberProfile(
+                    userId = roomSummary.directUserId!!,
+                    roomId = timelineArgs.roomId,
+                    context = requireContext()
+            )
+        } else {
+            navigator.openRoomProfile(
+                    requireContext(),
+                    timelineArgs.roomId,
+                    directAccess
+            )
+        }
     }
 
     private fun handleOpenRoom(openRoom: RoomDetailViewEvents.OpenRoom) {

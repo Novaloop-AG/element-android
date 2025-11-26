@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Element Android is a Matrix client for Android. This is Element Classic (previous generation), now in maintenance mode receiving security updates only. The project includes both the Android application and the Matrix SDK (matrix-sdk-android).
 
+**Note**: This repository is a fork of Element Android, rebranded as HealthChat for the healthcare industry. The `release/healthchat` branch contains HealthChat-specific customizations.
+
 **Key fact**: The Matrix SDK and Element application currently share the same repository. The SDK is exported separately to https://github.com/matrix-org/matrix-android-sdk2 at each release.
 
 ## Build Commands
@@ -53,8 +55,14 @@ Element Android is a Matrix client for Android. This is Element Classic (previou
 ./gradlew verifyPaparazziDebug     # Verify screenshots match
 # Or use: ./gradlew recordScreenshots and ./gradlew verifyScreenshots
 
-# Run specific test class
-./gradlew -Pandroid.testInstrumentationRunnerArguments.class=com.example.TestClass matrix-sdk-android:connectedAndroidTest
+# Run specific SDK integration test class
+./gradlew -Pandroid.testInstrumentationRunnerArguments.class=org.matrix.android.sdk.session.room.RoomServiceTest matrix-sdk-android:connectedAndroidTest
+
+# Run a single unit test class
+./gradlew :vector:testGplayReleaseUnitTest --tests "im.vector.app.features.SomeTest"
+
+# Run a single test method
+./gradlew :vector:testGplayReleaseUnitTest --tests "im.vector.app.features.SomeTest.testMethodName"
 ```
 
 ## Project Structure

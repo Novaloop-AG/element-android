@@ -2390,6 +2390,17 @@
     <string name="room_member_open_or_create_dm">Direct message</string>
     <string name="room_member_jump_to_read_receipt">Jump to read receipt</string>
 
+    <!-- Extended Profile -->
+    <string name="extended_profile_section_title">Profile</string>
+    <string name="extended_profile_title">Title</string>
+    <string name="extended_profile_specialization">Specialization</string>
+    <string name="extended_profile_practice_name">Practice Name</string>
+    <string name="extended_profile_business_address">Business Address</string>
+    <string name="extended_profile_business_email">Business Email</string>
+    <string name="extended_profile_business_tel">Business Phone</string>
+    <string name="extended_profile_website">Website</string>
+    <string name="extended_profile_further_info">Further Information</string>
+
     <!-- Note to translators: the translation MUST contain the string "${app_name}", which will be replaced by the application name -->
     <string name="rendering_event_error_type_of_event_not_handled">${app_name} does not handle events of type \'%1$s\'</string>
     <!-- Note to translators: the translation MUST contain the string "${app_name}", which will be replaced by the application name -->

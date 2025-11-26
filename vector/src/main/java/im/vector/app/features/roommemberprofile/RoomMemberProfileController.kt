@@ -42,6 +42,9 @@ class RoomMemberProfileController @Inject constructor(
         fun onBanClicked(isSpace: Boolean, isUserBanned: Boolean)
         fun onCancelInviteClicked()
         fun onInviteClicked()
+        fun onEmailClicked(email: String)
+        fun onPhoneClicked(phone: String)
+        fun onWebsiteClicked(url: String)
     }
 
     override fun buildModels(data: RoomMemberProfileViewState?) {
@@ -78,11 +81,88 @@ class RoomMemberProfileController @Inject constructor(
     }
 
     private fun buildRoomMemberActions(state: RoomMemberProfileViewState) {
+        buildExtendedProfileSection(state)
         if (!state.isSpace) {
             buildSecuritySection(state)
         }
         buildMoreSection(state)
         buildAdminSection(state)
+    }
+
+    private fun buildExtendedProfileSection(state: RoomMemberProfileViewState) {
+        val extendedProfile = state.extendedProfile() ?: return
+        if (!extendedProfile.hasAnyData()) return
+
+        buildProfileSection(stringProvider.getString(CommonStrings.extended_profile_section_title))
+
+        extendedProfile.title?.let {
+            buildProfileAction(
+                    id = "extended_title",
+                    title = stringProvider.getString(CommonStrings.extended_profile_title),
+                    subtitle = it,
+                    editable = false
+            )
+        }
+        extendedProfile.specialization?.let {
+            buildProfileAction(
+                    id = "extended_specialization",
+                    title = stringProvider.getString(CommonStrings.extended_profile_specialization),
+                    subtitle = it,
+                    editable = false
+            )
+        }
+        extendedProfile.practiceName?.let {
+            buildProfileAction(
+                    id = "extended_practice",
+                    title = stringProvider.getString(CommonStrings.extended_profile_practice_name),
+                    subtitle = it,
+                    editable = false
+            )
+        }
+        extendedProfile.formattedAddress()?.let {
+            buildProfileAction(
+                    id = "extended_address",
+                    title = stringProvider.getString(CommonStrings.extended_profile_business_address),
+                    subtitle = it,
+                    editable = false
+            )
+        }
+        extendedProfile.businessEmail?.let { email ->
+            buildProfileAction(
+                    id = "extended_email",
+                    title = stringProvider.getString(CommonStrings.extended_profile_business_email),
+                    subtitle = email,
+                    editable = false,
+                    action = { callback?.onEmailClicked(email) }
+            )
+        }
+        extendedProfile.businessTel?.let { phone ->
+            buildProfileAction(
+                    id = "extended_phone",
+                    title = stringProvider.getString(CommonStrings.extended_profile_business_tel),
+                    subtitle = phone,
+                    editable = false,
+                    action = { callback?.onPhoneClicked(phone) }
+            )
+        }
+        extendedProfile.website?.let { url ->
+            buildProfileAction(
+                    id = "extended_website",
+                    title = stringProvider.getString(CommonStrings.extended_profile_website),
+                    subtitle = url,
+                    editable = false,
+                    action = { callback?.onWebsiteClicked(url) }
+            )
+        }
+        extendedProfile.furtherInfo?.let {
+            buildProfileAction(
+                    id = "extended_further_info",
+                    title = stringProvider.getString(CommonStrings.extended_profile_further_info),
+                    subtitle = it,
+                    editable = false,
+                    divider = false
+            )
+        }
     }
 
     private fun buildSecuritySection(state: RoomMemberProfileViewState) {

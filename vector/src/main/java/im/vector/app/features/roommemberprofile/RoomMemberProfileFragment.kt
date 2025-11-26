@@ -7,6 +7,8 @@
 
 package im.vector.app.features.roommemberprofile
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.os.Parcelable
 import android.view.LayoutInflater
@@ -34,6 +36,7 @@ import im.vector.app.core.extensions.setTextOrHide
 import im.vector.app.core.platform.StateView
 import im.vector.app.core.platform.VectorBaseFragment
 import im.vector.app.core.platform.VectorMenuProvider
+import im.vector.app.core.utils.openUrlInExternalBrowser
 import im.vector.app.core.utils.startSharePlainTextIntent
 import im.vector.app.databinding.DialogBaseEditTextBinding
 import im.vector.app.databinding.DialogShareQrCodeBinding
@@ -78,6 +81,7 @@ class RoomMemberProfileFragment :
     private val viewModel: RoomMemberProfileViewModel by fragmentViewModel()
 
     private var appBarStateChangeListener: AppBarStateChangeListener? = null
+    private var hasScrolledForExtendedProfile = false
 
     override fun getBinding(inflater: LayoutInflater, container: ViewGroup?): FragmentMatrixProfileBinding {
         return FragmentMatrixProfileBinding.inflate(inflater, container, false)
@@ -116,6 +120,9 @@ class RoomMemberProfileFragment :
                 )
         )
         views.matrixProfileAppBarLayout.addOnOffsetChangedListener(appBarStateChangeListener)
+        // Ensure AppBar is expanded and scroll is at top when navigating to profile
+        views.matrixProfileAppBarLayout.setExpanded(true, false)
+        views.matrixProfileRecyclerView.scrollToPosition(0)
         viewModel.observeViewEvents {
             when (it) {
                 is RoomMemberProfileViewEvents.Loading -> showLoading(it.message)
@@ -135,6 +142,18 @@ class RoomMemberProfileFragment :
             }
         }
         setupLongClicks()
+
+        // Scroll to top when extended profile data loads to show the new section
+        viewModel.onEach(RoomMemberProfileViewState::extendedProfile) { extendedProfile ->
+            if (!hasScrolledForExtendedProfile && extendedProfile is Success && extendedProfile().hasAnyData()) {
+                hasScrolledForExtendedProfile = true
+                // PostDelayed to ensure Epoxy has rebuilt the list with the new section
+                views.matrixProfileRecyclerView.postDelayed({
+                    views.matrixProfileAppBarLayout.setExpanded(true, false)
+                    views.matrixProfileRecyclerView.scrollToPosition(0)
+                }, 100)
+            }
+        }
     }
 
     private fun handleReportSuccess() {
@@ -442,5 +461,23 @@ class RoomMemberProfileFragment :
 
     override fun onInviteClicked() {
         viewModel.handle(RoomMemberProfileAction.InviteUser)
+    }
+
+    override fun onEmailClicked(email: String) {
+        val intent = Intent(Intent.ACTION_SENDTO).apply {
+            data = Uri.parse("mailto:$email")
+        }
+        startActivity(Intent.createChooser(intent, null))
+    }
+
+    override fun onPhoneClicked(phone: String) {
+        val intent = Intent(Intent.ACTION_DIAL).apply {
+            data = Uri.parse("tel:$phone")
+        }
+        startActivity(intent)
+    }
+
+    override fun onWebsiteClicked(url: String) {
+        openUrlInExternalBrowser(requireContext(), url)
     }
 }
