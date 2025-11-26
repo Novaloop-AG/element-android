@@ -14,19 +14,25 @@
     <bool name="settings_root_preferences_visible">true</bool>
     <bool name="settings_root_voice_video_visible">true</bool>
     <bool name="settings_root_security_privacy_visible">true</bool>
-    <bool name="settings_root_labs_visible">true</bool>
+    <bool name="settings_root_labs_visible">false</bool>
     <bool name="settings_root_advanced_visible">true</bool>
     <bool name="settings_root_help_about_visible">true</bool>
-    <bool name="settings_root_legals_visible">true</bool>
+    <bool name="settings_root_legals_visible">false</bool>
 
     <!-- Level 1: General -->
+    <bool name="settings_change_password_visible">false</bool>
+    <bool name="settings_3pids_management_visible">false</bool>
+    <bool name="settings_discovery_visible">false</bool>
+    <bool name="settings_deactivate_account_visible">false</bool>
+    <bool name="settings_integrations_visible">false</bool>
+    <bool name="settings_identity_server_visible">false</bool>
 
     <!-- Level 1: Notifications -->
 
     <!-- Level 1: Preferences -->
 
     <bool name="settings_interface_bubble_visible">true</bool>
-    <bool name="settings_interface_bubble_default">false</bool>
+    <bool name="settings_interface_bubble_default">true</bool>
     <bool name="settings_presence_visible">false</bool>
     <bool name="settings_presence_user_always_appears_offline_default">false</bool>
 
@@ -52,6 +58,7 @@
     <bool name="settings_labs_enable_voice_broadcast_visible">true</bool>
     <bool name="settings_labs_enable_voice_broadcast_default">false</bool>
     <!-- Level 1: Advanced settings -->
+    <bool name="settings_rageshake_visible">false</bool>
 
     <!-- Level 1: Help and about -->
 

@@ -318,8 +318,8 @@ class VectorSettingsGeneralFragment :
 
             false
         }
-        // Account deactivation is visible only if account is not managed by an external URL.
-        mDeactivateAccountCategory.isVisible = homeServerCapabilities.delegatedOidcAuthEnabled.not()
+        // Account deactivation is hidden for HealthChat
+        mDeactivateAccountCategory.isVisible = false
     }
 
     private suspend fun getCacheSize(): Long = withContext(Dispatchers.IO) {

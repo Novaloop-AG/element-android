@@ -41,7 +41,9 @@ class AttachmentTypeSelectorBottomSheet : VectorBaseBottomSheetDialogFragment<Bo
         super.invalidate()
         views.location.isVisible = viewState.isLocationVisible
         views.voiceBroadcast.isVisible = viewState.isVoiceBroadcastVisible
-        views.poll.isVisible = !timelineState.isThreadTimeline()
+        views.poll.isVisible = !timelineState.isThreadTimeline() && viewState.isPollsVisible
+        views.stickers.isVisible = viewState.isStickersVisible
+        views.contact.isVisible = viewState.isContactSharingVisible
         views.textFormatting.isChecked = viewState.isTextFormattingEnabled
         views.textFormatting.setCompoundDrawablesRelativeWithIntrinsicBounds(
                 if (viewState.isTextFormattingEnabled) {

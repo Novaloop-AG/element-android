@@ -364,11 +364,20 @@ class MessageComposerFragment : VectorBaseFragment<FragmentComposerBinding>(), A
                                 vectorFeatures.isLocationSharingEnabled(),
                         )
                         attachmentTypeSelector.setAttachmentVisibility(
-                                AttachmentType.POLL, !isThreadTimeLine()
+                                AttachmentType.POLL,
+                                !isThreadTimeLine() && vectorFeatures.isPollsEnabled()
                         )
                         attachmentTypeSelector.setAttachmentVisibility(
                                 AttachmentType.VOICE_BROADCAST,
                                 vectorPreferences.isVoiceBroadcastEnabled(), // TODO check user permission
+                        )
+                        attachmentTypeSelector.setAttachmentVisibility(
+                                AttachmentType.STICKER,
+                                vectorFeatures.isStickersEnabled(),
+                        )
+                        attachmentTypeSelector.setAttachmentVisibility(
+                                AttachmentType.CONTACT,
+                                vectorFeatures.isContactSharingEnabled(),
                         )
                     }
                     attachmentTypeSelector.show(composer.attachmentButton)

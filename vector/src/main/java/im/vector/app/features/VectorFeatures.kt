@@ -33,6 +33,9 @@ interface VectorFeatures {
     fun isNewAppLayoutFeatureEnabled(): Boolean
     fun isVoiceBroadcastEnabled(): Boolean
     fun isUnverifiedSessionsAlertEnabled(): Boolean
+    fun isStickersEnabled(): Boolean
+    fun isPollsEnabled(): Boolean
+    fun isContactSharingEnabled(): Boolean
 }
 
 class DefaultVectorFeatures : VectorFeatures {
@@ -41,13 +44,16 @@ class DefaultVectorFeatures : VectorFeatures {
     override fun isOnboardingSplashCarouselEnabled() = true
     override fun isOnboardingUseCaseEnabled() = true
     override fun isOnboardingPersonalizeEnabled() = true
-    override fun isOnboardingCombinedRegisterEnabled() = true
+    override fun isOnboardingCombinedRegisterEnabled() = false
     override fun isOnboardingCombinedLoginEnabled() = true
     override fun allowExternalUnifiedPushDistributors(): Boolean = Config.ALLOW_EXTERNAL_UNIFIED_PUSH_DISTRIBUTORS
     override fun isScreenSharingEnabled(): Boolean = true
     override fun isLocationSharingEnabled() = Config.ENABLE_LOCATION_SHARING
     override fun forceUsageOfOpusEncoder(): Boolean = false
     override fun isNewAppLayoutFeatureEnabled(): Boolean = true
-    override fun isVoiceBroadcastEnabled(): Boolean = true
+    override fun isVoiceBroadcastEnabled(): Boolean = false
     override fun isUnverifiedSessionsAlertEnabled(): Boolean = true
+    override fun isStickersEnabled(): Boolean = false
+    override fun isPollsEnabled(): Boolean = false
+    override fun isContactSharingEnabled(): Boolean = false
 }

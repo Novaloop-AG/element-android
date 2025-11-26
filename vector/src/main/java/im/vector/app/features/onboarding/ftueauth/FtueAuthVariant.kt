@@ -105,15 +105,16 @@ class FtueAuthVariant(
         val loginConfig = activity.intent.getParcelableExtraCompat<LoginConfig?>(OnboardingActivity.EXTRA_CONFIG)
         if (isFirstCreation) {
             onboardingViewModel.handle(OnboardingAction.InitWith(loginConfig))
+            // Set onboarding flow to SignIn and trigger homeserver selection for SSO
+            onboardingViewModel.handle(
+                    OnboardingAction.SplashAction.OnIAlreadyHaveAnAccount(onboardingFlow = OnboardingFlow.SignIn)
+            )
         }
     }
 
     private fun addFirstFragment() {
-        val splashFragment = when (vectorFeatures.isOnboardingSplashCarouselEnabled()) {
-            true -> FtueAuthSplashCarouselFragment::class.java
-            else -> FtueAuthSplashFragment::class.java
-        }
-        activity.addFragment(views.loginFragmentContainer, splashFragment)
+        // Skip splash, go directly to combined login fragment for SSO-only flow
+        activity.addFragment(views.loginFragmentContainer, FtueAuthCombinedLoginFragment::class.java)
     }
 
     private fun updateWithState(viewState: OnboardingViewState) {

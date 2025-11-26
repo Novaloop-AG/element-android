@@ -654,14 +654,6 @@ class HomeActivity :
                 showLayoutSettings()
                 true
             }
-            R.id.menu_home_invite_friends -> {
-                launchInviteFriends()
-                true
-            }
-            R.id.menu_home_qr -> {
-                launchQrCode()
-                true
-            }
             else -> false
         }
     }

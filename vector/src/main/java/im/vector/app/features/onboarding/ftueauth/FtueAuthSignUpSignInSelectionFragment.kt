@@ -56,7 +56,7 @@ class FtueAuthSignUpSignInSelectionFragment :
         when (state.serverType) {
             ServerType.MatrixOrg -> renderServerInformation(
                     icon = R.drawable.ic_logo_matrix_org,
-                    title = getString(CommonStrings.login_connect_to, state.selectedHomeserver.userFacingUrl.toReducedUrl()),
+                    title = getString(CommonStrings.login_connect_to, "HealthChat"),
                     subtitle = getString(CommonStrings.login_server_matrix_org_text)
             )
             ServerType.EMS -> renderServerInformation(

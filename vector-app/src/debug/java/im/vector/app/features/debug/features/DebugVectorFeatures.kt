@@ -73,6 +73,15 @@ class DebugVectorFeatures(
     override fun isUnverifiedSessionsAlertEnabled(): Boolean = read(DebugFeatureKeys.unverifiedSessionsAlertEnabled)
             ?: vectorFeatures.isUnverifiedSessionsAlertEnabled()
 
+    override fun isStickersEnabled(): Boolean = read(DebugFeatureKeys.stickersEnabled)
+            ?: vectorFeatures.isStickersEnabled()
+
+    override fun isPollsEnabled(): Boolean = read(DebugFeatureKeys.pollsEnabled)
+            ?: vectorFeatures.isPollsEnabled()
+
+    override fun isContactSharingEnabled(): Boolean = read(DebugFeatureKeys.contactSharingEnabled)
+            ?: vectorFeatures.isContactSharingEnabled()
+
     fun <T> override(value: T?, key: Preferences.Key<T>) = updatePreferences {
         if (value == null) {
             it.remove(key)
@@ -134,4 +143,7 @@ object DebugFeatureKeys {
     val newAppLayoutEnabled = booleanPreferencesKey("new-app-layout-enabled")
     val voiceBroadcastEnabled = booleanPreferencesKey("voice-broadcast-enabled")
     val unverifiedSessionsAlertEnabled = booleanPreferencesKey("unverified-sessions-alert-enabled")
+    val stickersEnabled = booleanPreferencesKey("stickers-enabled")
+    val pollsEnabled = booleanPreferencesKey("polls-enabled")
+    val contactSharingEnabled = booleanPreferencesKey("contact-sharing-enabled")
 }

@@ -1060,7 +1060,7 @@
     <string name="login_splash_submit">Inizia</string>
     <string name="login_server_title">Seleziona un server</string>
     <string name="login_server_text">Proprio come con le email, puoi creare un account dove preferisci e interagire con chiunque</string>
-    <string name="login_server_matrix_org_text">Unisciti gratuitamente a milioni di utenti sul più grande server pubblico</string>
+    <string name="login_server_matrix_org_text">La soluzione di chat sicura per i professionisti della salute</string>
     <string name="login_server_modular_text">Hosting premium per organizzazioni</string>
     <string name="login_server_modular_learn_more">Maggiori info</string>
     <string name="login_server_other_title">Altro</string>
@@ -1072,7 +1072,7 @@
     <string name="login_signin_to">Accedi a %1$s</string>
     <string name="login_signup">Registrati</string>
     <string name="login_signin">Accedi</string>
-    <string name="login_signin_sso">Continua con l\'autenticazione (SSO)</string>
+    <string name="login_signin_sso">Accedi</string>
     <string name="login_server_url_form_modular_hint">Indirizzo Element Matrix Services</string>
     <string name="login_server_url_form_other_hint">Indirizzo</string>
     <string name="login_server_url_form_modular_text">Hosting premium per organizzazioni</string>

@@ -17,7 +17,7 @@ import im.vector.app.core.resources.BuildMeta
 import im.vector.app.core.utils.FirstThrottler
 import im.vector.app.core.utils.copyToClipboard
 import im.vector.app.core.utils.openAppSettingsPage
-import im.vector.app.core.utils.openUrlInChromeCustomTab
+import im.vector.app.core.utils.sendMailTo
 import im.vector.app.features.analytics.plan.MobileScreen
 import im.vector.app.features.version.VersionProvider
 import im.vector.lib.strings.CommonStrings
@@ -46,7 +46,7 @@ class VectorSettingsHelpAboutFragment :
         findPreference<VectorPreference>(VectorPreferences.SETTINGS_HELP_PREFERENCE_KEY)!!
                 .onPreferenceClickListener = Preference.OnPreferenceClickListener {
             if (firstThrottler.canHandle() is FirstThrottler.CanHandlerResult.Yes) {
-                openUrlInChromeCustomTab(requireContext(), null, VectorSettingsUrls.HELP)
+                activity?.let { sendMailTo("support@healthchat.ch", subject = "HealthChat Support Request", activity = it) }
             }
             false
         }
