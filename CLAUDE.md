@@ -13,6 +13,7 @@ Element Android is a Matrix client for Android. This is Element Classic (previou
 ## Prerequisites
 
 - **Git LFS**: Required for screenshot tests. Install via package manager (`brew install git-lfs` or `yay -S git-lfs`), then run `git lfs install --local` in the project root.
+- **Java/JDK**: Ensure a compatible JDK is installed (check `./gradlew --version` for requirements).
 
 ## Build Commands
 
@@ -67,6 +68,9 @@ Element Android is a Matrix client for Android. This is Element Classic (previou
 
 # Run a single test method
 ./gradlew :vector:testGplayReleaseUnitTest --tests "im.vector.app.features.SomeTest.testMethodName"
+
+# Run all integration tests (requires local Synapse server and emulator)
+./gradlew vector:connectedAndroidTest matrix-sdk-android:connectedAndroidTest
 ```
 
 ### Testing Conventions
@@ -274,3 +278,5 @@ Prefer `Timber.d()` and up (not `Timber.v()` - may not work on some devices).
 - Run quality checks before creating PR
 - Never skip `./tools/check/check_code_quality.sh`
 - File line limit: Kotlin files must be under 2800 lines (enforced by quality checks)
+- No PNG files allowed in `/drawable` folder (only in density-specific folders like `drawable-hdpi`)
+- Drawable folders must have matching file counts across all density variants
