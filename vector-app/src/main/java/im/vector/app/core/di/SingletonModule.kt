@@ -155,7 +155,8 @@ import javax.inject.Singleton
                 metricPlugins = vectorPlugins.plugins(),
                 cryptoAnalyticsPlugin = vectorPlugins.cryptoMetricPlugin,
                 customEventTypesProvider = vectorCustomEventTypesProvider,
-                clientPermalinkBaseUrl = mdmService.getData(MdmData.PermalinkBaseUrl),
+                clientPermalinkBaseUrl = mdmService.getData(MdmData.PermalinkBaseUrl)
+                        ?: "https://app.healthchat.ch/#/",
                 syncConfig = SyncConfig(
                         syncFilterParams = SyncFilterParams(lazyLoadMembersForStateEvents = true, useThreadNotifications = true)
                 )

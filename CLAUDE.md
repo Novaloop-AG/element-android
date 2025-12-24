@@ -6,9 +6,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Element Android is a Matrix client for Android. This is Element Classic (previous generation), now in maintenance mode receiving security updates only. The project includes both the Android application and the Matrix SDK (matrix-sdk-android).
 
-**Note**: This repository is a fork of Element Android, rebranded as HealthChat for the healthcare industry. The `release/healthchat` branch contains HealthChat-specific customizations.
+**Note**: This repository is a fork of Element Android, rebranded as HealthChat for the healthcare industry. The `release/healthchat` branch contains HealthChat-specific customizations. New HealthChat features should be developed on feature branches based on `release/healthchat`.
 
 **Key fact**: The Matrix SDK and Element application currently share the same repository. The SDK is exported separately to https://github.com/matrix-org/matrix-android-sdk2 at each release.
+
+## Prerequisites
+
+- **Git LFS**: Required for screenshot tests. Install via package manager (`brew install git-lfs` or `yay -S git-lfs`), then run `git lfs install --local` in the project root.
 
 ## Build Commands
 
@@ -65,6 +69,42 @@ Element Android is a Matrix client for Android. This is Element Classic (previou
 ./gradlew :vector:testGplayReleaseUnitTest --tests "im.vector.app.features.SomeTest.testMethodName"
 ```
 
+### Testing Conventions
+
+**Naming**: Use Gherkin format with backticks:
+```kotlin
+@Test
+fun `given a lowercase label, when uppercasing, then returns label uppercased`()
+```
+
+**Assertions**: Use Kluent's fluent API, assert entire objects:
+```kotlin
+result shouldBeEqualTo Person(age = 100, name = "Gandalf")  // Prefer
+result.age shouldBeEqualTo 100                               // Avoid
+```
+
+**Mocking**: Use Mockk. Avoid relaxed mocks; use Fakes instead.
+
+**Fakes and Fixtures**:
+- Fakes: Reusable test doubles in `${package}.test.fakes`
+- Fixtures: Reusable data builders in `${package}.test.fixtures`
+
+**ViewModel Testing**: Use `MavericksTestRule` and the `viewModel.test()` extension:
+```kotlin
+@get:Rule
+val mavericksTestRule = MavericksTestRule(testDispatcher = UnconfinedTestDispatcher())
+
+@Test
+fun `when handling action, then emits expected states`() {
+    val viewModel = MyViewModel(initialState)
+    val test = viewModel.test()
+    viewModel.handle(MyAction)
+    test.assertStatesChanges(initialState, { copy(loading = true) }).finish()
+}
+```
+
+**Threading**: Always inject `Dispatchers` and `Clock` instances; provide fakes in tests.
+
 ## Project Structure
 
 ### Main Modules
@@ -78,6 +118,7 @@ Element Android is a Matrix client for Android. This is Element Classic (previou
 
 **SDK modules:**
 - `matrix-sdk-android/` - Main Matrix SDK (Kotlin)
+  - Entry point: `org.matrix.android.sdk.api.Matrix` (singleton, provides AuthenticationService, etc.)
   - Package structure: `org.matrix.android.sdk.api.*` (public interfaces), `org.matrix.android.sdk.internal.*` (internal implementations)
 - `matrix-sdk-android-flow/` - Flow wrappers for the SDK
 - `library/rustCrypto/` - Rust crypto integration
@@ -91,22 +132,25 @@ Element Android is a Matrix client for Android. This is Element Classic (previou
 ### Architecture Patterns
 
 **MvRx (Mavericks) - MVI Framework:**
-- `Fragment` - UI screen (extends VectorBaseFragment)
-- `ViewModel` - Business logic (extends VectorViewModel), has `handle(action)` method
-- `ViewState` - Immutable state (implements MavericksState), use `copy()` to update
-- `ViewEvents` - One-time events (navigation, dialogs, toasts)
-- `ViewAction` - User actions sent to ViewModel
+- `Fragment` - UI screen (extends `VectorBaseFragment` in `vector/src/main/java/im/vector/app/core/platform/`)
+- `ViewModel` - Business logic (extends `VectorViewModel`), has `handle(action)` method
+- `ViewState` - Immutable state (implements `MavericksState`), use `copy()` to update
+- `ViewEvents` - One-time events (navigation, dialogs, toasts) - extends `VectorViewEvents`
+- `ViewAction` - User actions sent to ViewModel - extends `VectorViewModelAction`
 - `VectorSharedActionViewModel` - Communication between Fragments and Activity
+
+Key base classes are in `vector/src/main/java/im/vector/app/core/platform/`.
 
 **Epoxy - RecyclerView:**
 - `Controller` - Declares RecyclerView items (extends EpoxyController or TypedEpoxyController)
 - Fragment calls `controller.setData(state)`, which triggers `buildModels()`
 - Epoxy handles diffing and rendering automatically
 - **Warning**: Each item MUST have a unique ID or it will crash
+- Common Epoxy items are in `vector/src/main/java/im/vector/app/core/epoxy/`
 
 **Dependency Injection:**
 - SDK uses Dagger
-- App uses Hilt
+- App uses Hilt (DI modules in `vector/src/main/java/im/vector/app/core/di/`)
 - Services in SDK are interfaces in `org.matrix.android.sdk.api`, implementations in `org.matrix.android.sdk.internal`
 
 **Data Flow:**
@@ -229,3 +273,4 @@ Prefer `Timber.d()` and up (not `Timber.v()` - may not work on some devices).
 - Format files before committing (use project code style)
 - Run quality checks before creating PR
 - Never skip `./tools/check/check_code_quality.sh`
+- File line limit: Kotlin files must be under 2800 lines (enforced by quality checks)
