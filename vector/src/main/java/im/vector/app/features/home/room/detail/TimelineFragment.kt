@@ -632,11 +632,7 @@ class TimelineFragment :
     }
 
     private fun startOpenFileIntent(action: RoomDetailViewEvents.OpenFile) {
-        if (action.mimeType == MimeTypes.Apk) {
-            installApk(action)
-        } else {
-            openFile(action)
-        }
+        openFile(action)
     }
 
     private fun openFile(action: RoomDetailViewEvents.OpenFile) {
