@@ -55,8 +55,8 @@ class FtueAuthSignUpSignInSelectionFragment :
     private fun render(state: OnboardingViewState) {
         when (state.serverType) {
             ServerType.MatrixOrg -> renderServerInformation(
-                    icon = R.drawable.ic_logo_matrix_org,
-                    title = getString(CommonStrings.login_connect_to, "HealthChat"),
+                    icon = null,
+                    title = "HealthChat",
                     subtitle = getString(CommonStrings.login_server_matrix_org_text)
             )
             ServerType.EMS -> renderServerInformation(
