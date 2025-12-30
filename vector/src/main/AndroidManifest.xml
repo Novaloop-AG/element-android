@@ -44,9 +44,6 @@
     <!-- For VectorSyncAndroidService -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
 
-    <!-- For LocationSharingAndroidService -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
-
     <!-- For ScreenCaptureAndroidService -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
 
@@ -365,11 +362,6 @@
                 <action android:name="android.telecom.ConnectionService" />
             </intent-filter>
         </service>
-
-        <service
-            android:name=".features.location.live.tracking.LocationSharingAndroidService"
-            android:exported="false"
-            android:foregroundServiceType="location" />
 
         <service
             android:name=".features.start.StartAppAndroidService"
