@@ -76,3 +76,4 @@ jobs:
           releaseFiles: vector-app/build/outputs/bundle/gplayRelease/*.aab
           track: ${{ inputs.track }}
           status:  ${{ inputs.release-status }}
+          changesNotSentForReview: true
