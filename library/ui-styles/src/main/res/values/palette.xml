@@ -16,7 +16,9 @@
     <color name="palette_polly">#E64F7A</color>
     <color name="palette_melon">#FF812D</color>
 
-    <color name="palette_element_green">#00A7D7</color>
+    <color name="palette_element_green">#1f4d85</color>
+    <color name="palette_healthchat_navy">#12325c</color>
+    <color name="palette_healthchat_steel">#376A91</color>
     <color name="palette_element_orange">#D9B072</color>
     <color name="palette_white">#FFFFFF</color>
     <color name="palette_vermilion">#FF5B55</color>

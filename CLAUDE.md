@@ -10,6 +10,30 @@ Element Android is a Matrix client for Android. This is Element Classic (previou
 
 **Key fact**: The Matrix SDK and Element application currently share the same repository. The SDK is exported separately to https://github.com/matrix-org/matrix-android-sdk2 at each release.
 
+### HealthChat Customizations
+
+HealthChat is a stripped-down, SSO-only deployment for healthcare. Key differences from upstream Element:
+
+**Identity**: Package `ch.healthchat.element`, app name "HealthChat", navy branding (#1f4d85 primary, #12325c navy, #376A91 steel blue).
+
+**Infrastructure** (configured in `vector-config/src/main/res/values/`):
+- Home server: `matrix.healthchat.ch`
+- Push gateway: `sygnal.healthchat.ch`
+- Jitsi: `jitsi.healthchat.ch`
+- Permalink host: `app.healthchat.ch`
+
+**Authentication**: SSO-only. Splash screen goes directly to combined login. SSO button labeled "Login".
+
+**Disabled features** (do not re-enable without discussion):
+- Location sharing (service and permissions removed from manifest)
+- Voice broadcast, polls, stickers, contact sharing (feature flags)
+- Invite friends, QR code, contact book integration (UI removed)
+- Labs section, legals section, rageshake (hidden in settings)
+- Password change, 3PID management, account discovery/deactivation, integrations, identity server selection (hidden)
+- Analytics (PostHog/Sentry disabled)
+- APK installation capability (security restriction)
+- Sunset migration notice
+
 ## Prerequisites
 
 - **Git LFS**: Required for screenshot tests. Install via package manager (`brew install git-lfs` or `yay -S git-lfs`), then run `git lfs install --local` in the project root.
@@ -157,8 +181,12 @@ Key base classes are in `vector/src/main/java/im/vector/app/core/platform/`.
 - App uses Hilt (DI modules in `vector/src/main/java/im/vector/app/core/di/`)
 - Services in SDK are interfaces in `org.matrix.android.sdk.api`, implementations in `org.matrix.android.sdk.internal`
 
+**Network & Serialization:**
+- [Retrofit](https://square.github.io/retrofit/) + [OkHttp3](https://square.github.io/okhttp/) for HTTP
+- [Moshi](https://github.com/square/moshi) for JSON parsing
+
 **Data Flow:**
-- Database (Realm) is source of truth
+- Database (Realm) is source of truth — multiple DB migrations must be handled incrementally (never squash pending migrations on `develop`/`release/healthchat`)
 - SDK exposes LiveData (legacy) and Flow (new)
 - ViewModels subscribe to SDK services
 - Fragment's `invalidate()` method updates UI from ViewState
@@ -263,12 +291,14 @@ Prefer `Timber.d()` and up (not `Timber.v()` - may not work on some devices).
 
 ## Important Notes
 
-- When adding dependencies, update `dependencies_groups.gradle` to allow download
-- Dependabot automatically creates PRs to upgrade dependencies
+- When adding dependencies, update `dependencies_groups.gradle` to allow download (sub-dependencies may also need adding)
+- Dependency versions are centralized in `dependencies.gradle`
 - Developer mode: Settings → Advanced settings (enables debug features)
 - Type `/devtools` in room composer for developer menu
 - Hidden debug: Green wheel icon (debug builds with developer mode)
 - Use "DO NOT COMMIT" in comments to prevent accidental commits (CI checks)
+- Rageshake (shake phone) sends bug reports with screenshots and logs to an internal server
+- Classes added to `org.matrix.android.sdk.internal` must also be declared `internal` in Kotlin
 
 ## Common Pitfalls
 
