@@ -1,10 +1,17 @@
 name: HealthChat Release to Google Play Store
 
 on:
+  push:
+    tags:
+      - 'healthchat-v*'
   workflow_dispatch:
     inputs:
+      version:
+        description: 'Marketing version (e.g. 1.6.4805). Required when running manually.'
+        required: true
+        type: string
       track:
-        description: 'Play Store track to upload to'
+        description: 'Play Store track'
         required: true
         default: 'internal'
         type: choice
@@ -13,8 +20,8 @@ on:
           - alpha
           - beta
           - production
-      release-status:
-        description: 'Release Status App'
+      release_status:
+        description: 'Release status'
         required: true
         default: 'completed'
         type: choice
@@ -23,6 +30,19 @@ on:
           - inProgress
           - halted
           - draft
+      release_notes_override:
+        description: 'Optional release notes. If empty, falls back to HEALTHCHAT_CHANGES.md section for the given version.'
+        required: false
+        type: string
+
+permissions:
+  # Only need read access to clone. Upload uses the Play Console service
+  # account JSON from secrets, not GITHUB_TOKEN.
+  contents: read
+
+concurrency:
+  group: healthchat-release-${{ github.event.inputs.version || github.ref_name }}
+  cancel-in-progress: false
 
 env:
   GRADLE_OPTS: -Dorg.gradle.jvmargs="-Xmx6g -Dfile.encoding=UTF-8 -XX:+HeapDumpOnOutOfMemoryError -XX:MaxMetaspaceSize=1g" -Dkotlin.incremental=false -XX:+UseG1GC
@@ -32,9 +52,115 @@ jobs:
   release:
     name: Build and upload AAB to Play Store
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/release/healthchat'
+    # Tag pushes must originate from release/healthchat. Dispatch runs must be
+    # invoked from that branch too (GitHub resolves ref_name to the branch on
+    # dispatch). Reject anything else up-front so we don't ship off main/dev.
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify ref is on release/healthchat
+        run: |
+          set -euo pipefail
+          # On tag pushes, GITHUB_REF_NAME is the tag, not the branch. Resolve
+          # the commit's branch membership instead.
+          if ! git branch -r --contains "$GITHUB_SHA" | grep -qE 'origin/release/healthchat$'; then
+            echo "::error::Commit $GITHUB_SHA is not on origin/release/healthchat. Refusing to release."
+            exit 1
+          fi
+
+      - name: Resolve marketing version
+        id: version
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION="${GITHUB_REF_NAME#healthchat-v}"
+          fi
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::Invalid marketing version '$VERSION' — expected e.g. 1.6.4805"
+            exit 1
+          fi
+          # Drop any pre-release/build suffix (e.g. -rc1, -hotfix1) for the build.gradle comparison.
+          BASE_VERSION=$(echo "$VERSION" | sed -E 's/([0-9]+\.[0-9]+\.[0-9]+)([.-].*)?$/\1/')
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "base_version=$BASE_VERSION" >> "$GITHUB_OUTPUT"
+          echo "Resolved marketing version: $VERSION (base: $BASE_VERSION)"
+
+      - name: Verify build.gradle version matches tag
+        id: gradle_version
+        env:
+          BASE_VERSION: ${{ steps.version.outputs.base_version }}
+        run: |
+          set -euo pipefail
+          MAJOR=$(grep -E '^ext\.versionMajor\s*=' vector-app/build.gradle | head -1 | sed -E 's/.*=\s*([0-9]+).*/\1/')
+          MINOR=$(grep -E '^ext\.versionMinor\s*=' vector-app/build.gradle | head -1 | sed -E 's/.*=\s*([0-9]+).*/\1/')
+          PATCH=$(grep -E '^ext\.versionPatch\s*=' vector-app/build.gradle | head -1 | sed -E 's/.*=\s*([0-9]+).*/\1/')
+          if [[ -z "$MAJOR" || -z "$MINOR" || -z "$PATCH" ]]; then
+            echo "::error::Could not parse versionMajor/Minor/Patch from vector-app/build.gradle"
+            exit 1
+          fi
+          GRADLE_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+          echo "Parsed vector-app/build.gradle: $GRADLE_VERSION"
+          if [[ "$GRADLE_VERSION" != "$BASE_VERSION" ]]; then
+            echo "::error::Tag version $BASE_VERSION does not match vector-app/build.gradle ($GRADLE_VERSION). Bump versionMajor/Minor/Patch and commit before tagging."
+            exit 1
+          fi
+          # Formula: (major*10000 + minor*100 + patch) + 4_000_000, then *10
+          # for the AAB output (see vector-app/build.gradle:57 and :203-208).
+          BASE_CODE=$(( MAJOR * 10000 + MINOR * 100 + PATCH + 4000000 ))
+          VERSION_CODE=$(( BASE_CODE * 10 ))
+          echo "version_code=$VERSION_CODE" >> "$GITHUB_OUTPUT"
+          echo "Computed versionCode: $VERSION_CODE"
+
+      - name: Extract release notes
+        id: notes
+        env:
+          VERSION: ${{ steps.version.outputs.base_version }}
+          OVERRIDE: ${{ github.event.inputs.release_notes_override }}
+        run: |
+          set -euo pipefail
+          if [[ -n "${OVERRIDE:-}" ]]; then
+            NOTES="$OVERRIDE"
+            echo "Using release notes from workflow input"
+          else
+            NOTES=$(awk -v ver="$VERSION" '
+              /^## Changes in / {
+                if (found) { exit }
+                if ($0 ~ "## Changes in " ver "( |$|\\()") { found = 1; next }
+              }
+              found { print }
+            ' HEALTHCHAT_CHANGES.md | sed '/^[[:space:]]*$/{N;/^\n$/D;}')
+            if [[ -z "$NOTES" ]]; then
+              NOTES="HealthChat ${VERSION} — automated build from ${GITHUB_REF_NAME}."
+              echo "::warning::No HEALTHCHAT_CHANGES.md section found for $VERSION — using fallback"
+            fi
+          fi
+          # Play Store "What's new" has a 500-character limit per locale.
+          CHAR_COUNT=$(printf '%s' "$NOTES" | wc -c)
+          if (( CHAR_COUNT > 500 )); then
+            echo "::warning::Release notes are $CHAR_COUNT chars; Play Store truncates at 500"
+          fi
+          {
+            echo 'notes<<NOTES_EOF'
+            echo "$NOTES"
+            echo 'NOTES_EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Generate fastlane changelog files
+        env:
+          VERSION_CODE: ${{ steps.gradle_version.outputs.version_code }}
+          NOTES: ${{ steps.notes.outputs.notes }}
+        run: |
+          set -euo pipefail
+          for locale in en-US de-DE; do
+            dir="fastlane/metadata/android/${locale}/changelogs"
+            mkdir -p "$dir"
+            printf '%s\n' "$NOTES" > "${dir}/${VERSION_CODE}.txt"
+            echo "Wrote ${dir}/${VERSION_CODE}.txt"
+          done
 
       - name: Use JDK 21
         uses: actions/setup-java@v4
@@ -62,11 +188,16 @@ jobs:
           RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
           RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
 
-      - name: Upload AAB artifact
+      - name: Upload workflow artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: healthchat-release-aab
-          path: vector-app/build/outputs/bundle/gplayRelease/*.aab
+          name: healthchat-${{ steps.version.outputs.version }}
+          path: |
+            vector-app/build/outputs/bundle/gplayRelease/*.aab
+            vector-app/build/outputs/mapping/gplayRelease/mapping.txt
+          retention-days: 90
+          if-no-files-found: warn
 
       - name: Upload to Play Store
         uses: r0adkll/upload-google-play@v1
@@ -74,6 +205,7 @@ jobs:
           serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
           packageName: ch.healthchat.element
           releaseFiles: vector-app/build/outputs/bundle/gplayRelease/*.aab
-          track: ${{ inputs.track }}
-          status:  ${{ inputs.release-status }}
-          changesNotSentForReview: true
+          track: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.track || 'internal' }}
+          status: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.release_status || 'completed' }}
+          whatsNewDirectory: fastlane/metadata/android
+          mappingFile: vector-app/build/outputs/mapping/gplayRelease/mapping.txt

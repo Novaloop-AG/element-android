@@ -283,6 +283,10 @@ Prefer `Timber.d()` and up (not `Timber.v()` - may not work on some devices).
 - **Gplay**: Uses Firebase for push notifications (Google Services)
 - **Fdroid**: No closed-source dependencies, uses UnifiedPush or background polling
 
+## Releasing HealthChat
+
+Release procedure (tagging, Play Store upload, keystore rotation, rebase divergence) lives in the `releasing-healthchat` skill at `.claude/skills/releasing-healthchat/SKILL.md`. Claude surfaces it on demand. Release notes are maintained in `HEALTHCHAT_CHANGES.md` at the repo root.
+
 ## Testing Requirements
 
 - Test on Android API 21+ (Lollipop minimum)
