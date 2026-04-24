@@ -1,8 +1,8 @@
-## Unreleased
+## Changes in 1.6.4806 (2026-04-24)
 
 🐛 Bugfixes
 
-- Lock the login screen to the HealthChat homeserver and enforce SSO-only authentication client-side. The homeserver-edit control is hidden and any homeserver that does not advertise SSO is treated as unsupported, so a password form can never be reached.
+- Sign-in is now strictly SSO-only. The homeserver can no longer be changed from the login screen, and any server that does not advertise single sign-on is rejected — so a password form can never appear.
 
 ## Changes in 1.6.4805 (2026-04-21)
 
