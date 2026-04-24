@@ -205,7 +205,8 @@ jobs:
           serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
           packageName: ch.healthchat.element
           releaseFiles: vector-app/build/outputs/bundle/gplayRelease/*.aab
-          track: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.track || 'internal' }}
+          tracks: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.track || 'internal' }}
           status: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.release_status || 'completed' }}
           whatsNewDirectory: fastlane/metadata/android
           mappingFile: vector-app/build/outputs/mapping/gplayRelease/mapping.txt
+          changesNotSentForReview: true
