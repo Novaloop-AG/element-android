@@ -7,7 +7,6 @@
 
 package im.vector.app.features.onboarding
 
-import im.vector.app.core.extensions.containsAllItems
 import im.vector.app.features.login.LoginMode
 import im.vector.app.features.login.toSsoState
 import org.matrix.android.sdk.api.auth.AuthenticationService
@@ -43,13 +42,11 @@ class StartAuthenticationFlowUseCase @Inject constructor(
             isLoginWithQrSupported = authFlow.isLoginWithQrSupported
     )
 
+    // HealthChat: strictly SSO-only. A homeserver that does not advertise SSO is treated as
+    // Unsupported, regardless of whether it offers password login — the app must never render
+    // a password form.
     private fun LoginFlowResult.findPreferredLoginMode() = when {
-        supportedLoginTypes.containsAllItems(LoginFlowTypes.SSO, LoginFlowTypes.PASSWORD) -> LoginMode.SsoAndPassword(
-                ssoIdentityProviders.toSsoState(),
-                hasOidcCompatibilityFlow
-        )
         supportedLoginTypes.contains(LoginFlowTypes.SSO) -> LoginMode.Sso(ssoIdentityProviders.toSsoState(), hasOidcCompatibilityFlow)
-        supportedLoginTypes.contains(LoginFlowTypes.PASSWORD) -> LoginMode.Password
         else -> LoginMode.Unsupported
     }
 

@@ -53,7 +53,7 @@ class StartAuthenticationFlowUseCaseTest {
     }
 
     @Test
-    fun `given empty sso providers and login supports SSO and Password when starting authentication flow then prefers fallback SsoAndPassword`() = runTest {
+    fun `given empty sso providers and login supports SSO and Password when starting authentication flow then prefers fallback Sso`() = runTest {
         val loginResult = aLoginResult(supportedLoginTypes = SSO_AND_PASSWORD_LOGIN_TYPES, ssoProviders = emptyList())
         fakeAuthenticationService.givenLoginFlow(A_HOMESERVER_CONFIG, loginResult)
 
@@ -61,13 +61,13 @@ class StartAuthenticationFlowUseCaseTest {
 
         result shouldBeEqualTo expectedResult(
                 supportedLoginTypes = SSO_AND_PASSWORD_LOGIN_TYPES,
-                preferredLoginMode = LoginMode.SsoAndPassword(SsoState.Fallback, false),
+                preferredLoginMode = LoginMode.Sso(SsoState.Fallback, false),
         )
         verifyClearsAndThenStartsLogin(A_HOMESERVER_CONFIG)
     }
 
     @Test
-    fun `given sso providers and login supports SSO and Password when starting authentication flow then prefers SsoAndPassword`() = runTest {
+    fun `given sso providers and login supports SSO and Password when starting authentication flow then prefers Sso`() = runTest {
         val loginResult = aLoginResult(supportedLoginTypes = SSO_AND_PASSWORD_LOGIN_TYPES, ssoProviders = SSO_IDENTITY_PROVIDERS)
         fakeAuthenticationService.givenLoginFlow(A_HOMESERVER_CONFIG, loginResult)
 
@@ -75,7 +75,7 @@ class StartAuthenticationFlowUseCaseTest {
 
         result shouldBeEqualTo expectedResult(
                 supportedLoginTypes = SSO_AND_PASSWORD_LOGIN_TYPES,
-                preferredLoginMode = LoginMode.SsoAndPassword(SsoState.IdentityProviders(SSO_IDENTITY_PROVIDERS), false),
+                preferredLoginMode = LoginMode.Sso(SsoState.IdentityProviders(SSO_IDENTITY_PROVIDERS), false),
         )
         verifyClearsAndThenStartsLogin(A_HOMESERVER_CONFIG)
     }
@@ -109,7 +109,7 @@ class StartAuthenticationFlowUseCaseTest {
     }
 
     @Test
-    fun `given login supports Password when starting authentication flow then prefers Password`() = runTest {
+    fun `given login supports Password only when starting authentication flow then treats server as Unsupported`() = runTest {
         val loginResult = aLoginResult(supportedLoginTypes = PASSWORD_LOGIN_TYPE)
         fakeAuthenticationService.givenLoginFlow(A_HOMESERVER_CONFIG, loginResult)
 
@@ -117,7 +117,7 @@ class StartAuthenticationFlowUseCaseTest {
 
         result shouldBeEqualTo expectedResult(
                 supportedLoginTypes = PASSWORD_LOGIN_TYPE,
-                preferredLoginMode = LoginMode.Password,
+                preferredLoginMode = LoginMode.Unsupported,
         )
         verifyClearsAndThenStartsLogin(A_HOMESERVER_CONFIG)
     }
