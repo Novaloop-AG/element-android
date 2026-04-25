@@ -70,6 +70,14 @@ jobs:
             exit 1
           fi
 
+      - name: Materialize release/healthchat branch label
+        # Tag pushes leave HEAD detached. build.gradle's getGplayVersionSuffix()
+        # adds a "-dev" suffix unless `git rev-parse --abbrev-ref HEAD` returns
+        # main or release/*. Attach the branch label to the tagged commit so the
+        # versionName ships clean. Same commit, same tree — only the branch
+        # name lookup changes.
+        run: git checkout -B release/healthchat
+
       - name: Resolve marketing version
         id: version
         run: |
